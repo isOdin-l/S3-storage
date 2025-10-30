@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/isOdin-l/S3-storage/api/handler"
+	"github.com/isOdin-l/S3-storage/internal/databases/minio_storage"
 	"github.com/isOdin-l/S3-storage/internal/databases/postgresql"
 	"github.com/isOdin-l/S3-storage/internal/repository"
 	"github.com/isOdin-l/S3-storage/internal/router"
@@ -30,9 +31,16 @@ func main() {
 	defer metadataDb.Close()
 
 	//MinIO
+	s3storage, err := minio_storage.NewMinioDB(&minio_storage.S3Config{
+		Endpoint:  viper.GetString("S3_ENDPOINT"),
+		AccessKey: viper.GetString("S3_ACCESS_KEY"),
+		SecretKey: viper.GetString("S3_SECRET_KEY"),
+		Port:      viper.GetString("S3_PORT"),
+		Region:    viper.GetString("S3_REGION"),
+	})
 
 	// repository
-	repository := repository.NewRepository()
+	repository := repository.NewRepository(s3storage, metadataDb)
 
 	// service
 	service := service.NewService(repository)
