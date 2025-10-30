@@ -1,0 +1,36 @@
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio-storage
+    env_file:
+      - ./configs/s3-storage.env
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./minio-data:/data
+    networks:
+      - s3-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres-metadata
+    env_file:
+      - ./configs/metadata-storage.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql
+      - ./schema/01_init.up.sql:/docker-entrypoint-initdb.d/01_init.up.sql
+    networks:
+      - s3-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ivan -d s3_metadata"]
+      interval: 5s
+      retries: 10
+      start_period: 15s
+      timeout: 10s
+networks:
+  s3-network:
+    driver: bridge
