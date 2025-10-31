@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/isOdin-l/S3-storage/api/handler"
 	"github.com/isOdin-l/S3-storage/internal/databases/minio_storage"
 	"github.com/isOdin-l/S3-storage/internal/databases/postgresql"
@@ -38,6 +41,9 @@ func main() {
 		Port:      viper.GetString("S3_PORT"),
 		Region:    viper.GetString("S3_REGION"),
 	})
+	if err != nil {
+		logrus.Fatalf("failed to initialize s3-storage: %s", err.Error())
+	}
 
 	// repository
 	repository := repository.NewRepository(s3storage, metadataDb)
@@ -52,10 +58,15 @@ func main() {
 	router := router.NewRouter(handler)
 
 	// server
+	logrus.Info("Server starting...")
 	server := server.New()
-	if err := server.Run(viper.GetString("SERVER_PORT"), router); err != nil {
-		logrus.Fatalf("error while running server %s", err.Error())
-	}
+	go func() {
+		if err := server.Run(viper.GetString("SERVER_PORT"), router); err != nil && err != http.ErrServerClosed {
+			logrus.Fatalf("error while running server %s", err.Error())
+		}
+	}()
+
+	server.GracefulShutdown(context.Background())
 }
 
 func init_config() error {

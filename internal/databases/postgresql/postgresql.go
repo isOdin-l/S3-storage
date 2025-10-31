@@ -16,7 +16,7 @@ type Config struct {
 }
 
 func NewPostgresDB(cfg *Config) (*pgxpool.Pool, error) {
-	conectionString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+	conectionString := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
 
 	conn, err := pgxpool.New(context.Background(), conectionString)
 	if err != nil {
