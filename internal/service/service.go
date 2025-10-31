@@ -1,9 +1,13 @@
 package service
 
-import "github.com/isOdin-l/S3-storage/internal/repository"
+import (
+	"mime/multipart"
+
+	"github.com/isOdin-l/S3-storage/internal/repository"
+)
 
 type StorageServiceInterface interface {
-	Upload()
+	Upload(medCerfFile *multipart.File, fileHeader *multipart.FileHeader) error
 	Download()
 }
 

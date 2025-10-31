@@ -8,15 +8,28 @@ import (
 )
 
 type StorageHandler struct {
-	s service.StorageServiceInterface
+	service service.StorageServiceInterface
 }
 
 func NewStorageHandler(service service.StorageServiceInterface) *StorageHandler {
-	return &StorageHandler{s: service}
+	return &StorageHandler{service: service}
 }
 
 func (h *StorageHandler) Upload(w http.ResponseWriter, r *http.Request) {
-	render.JSON(w, r, "/upload")
+	file, fileHeader, err := r.FormFile("upload_file")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	err = h.service.Upload(&file, fileHeader)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, "Upload successfully done")
 }
 
 func (h *StorageHandler) Download(w http.ResponseWriter, r *http.Request) {

@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"mime/multipart"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/minio/minio-go/v7"
 )
 
 type StorageRepositoryInterace interface {
-	Upload()
+	Upload(medCerfFile *multipart.File, newFileName string, fileHeader *multipart.FileHeader) error
 	Download()
 }
 
