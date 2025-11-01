@@ -2,12 +2,16 @@ services:
   minio:
     image: minio/minio:latest
     container_name: minio-storage
-    env_file:
-      - ./configs/s3-storage.env
     ports:
       - "9000:9000"
       - "9001:9001"
-    command: server /data --console-address ":9001"
+    env_file:
+      - ./configs/s3-storage.env
+    entrypoint: >
+       /bin/sh -c "
+       /usr/bin/mc mb data/medical-certificates-bucket;
+       minio server /data --console-address ":9001";
+       "
     volumes:
       - ./databases-data/minio-data:/data
     networks:
@@ -25,12 +29,6 @@ services:
       - ./schema/01_init.up.sql:/docker-entrypoint-initdb.d/01_init.up.sql
     networks:
       - s3-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ivan -d s3_metadata"]
-      interval: 5s
-      retries: 10
-      start_period: 15s
-      timeout: 10s
 networks:
   s3-network:
     driver: bridge
