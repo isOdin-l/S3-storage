@@ -6,7 +6,6 @@ import (
 
 	"github.com/isOdin-l/S3-storage/api/handler"
 	"github.com/isOdin-l/S3-storage/internal/databases/minio_storage"
-	"github.com/isOdin-l/S3-storage/internal/databases/postgresql"
 	"github.com/isOdin-l/S3-storage/internal/repository"
 	"github.com/isOdin-l/S3-storage/internal/router"
 	"github.com/isOdin-l/S3-storage/internal/server"
@@ -19,19 +18,6 @@ import (
 func main() {
 	// configuration
 	init_config()
-
-	// Postgres
-	metadataDb, err := postgresql.NewPostgresDB(&postgresql.Config{
-		Host:     viper.GetString("POSTGRES_HOST"),
-		Port:     viper.GetString("POSTGRES_PORT"),
-		Username: viper.GetString("POSTGRES_USER"),
-		Password: viper.GetString("POSTGRES_PASSWORD"),
-		Database: viper.GetString("POSTGRES_DB"),
-	})
-	if err != nil {
-		logrus.Fatalf("failed to initialize metadata-db: %s", err.Error())
-	}
-	defer metadataDb.Close()
 
 	//MinIO
 	s3storage, err := minio_storage.NewMinioDB(&minio_storage.S3Config{
@@ -46,7 +32,7 @@ func main() {
 	}
 
 	// repository
-	repository := repository.NewRepository(s3storage, metadataDb)
+	repository := repository.NewRepository(s3storage)
 
 	// service
 	service := service.NewService(repository)

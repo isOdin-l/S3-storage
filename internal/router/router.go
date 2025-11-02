@@ -15,7 +15,6 @@ func NewRouter(h *handler.Handler) chi.Router {
 	r.Use(middleware.Recoverer)
 
 	r.Post("/upload", h.StorageHandlerInterface.Upload)
-	r.Get("/download", h.StorageHandlerInterface.Download)
 
 	return r
 }

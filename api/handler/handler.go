@@ -8,7 +8,6 @@ import (
 
 type StorageHandlerInterface interface {
 	Upload(w http.ResponseWriter, r *http.Request)
-	Download(w http.ResponseWriter, r *http.Request)
 }
 
 type Handler struct {

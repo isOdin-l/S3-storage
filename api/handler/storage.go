@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/isOdin-l/S3-storage/internal/service"
+	"github.com/isOdin-l/S3-storage/internal/types"
 )
 
 type StorageHandler struct {
@@ -16,22 +17,25 @@ func NewStorageHandler(service service.StorageServiceInterface) *StorageHandler 
 }
 
 func (h *StorageHandler) Upload(w http.ResponseWriter, r *http.Request) {
-	file, fileHeader, err := r.FormFile("upload_file")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	file, fileHeader, errReadFile := r.FormFile("upload_file")
+	if errReadFile != nil {
+		http.Error(w, errReadFile.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer file.Close()
 
-	err = h.service.Upload(&file, fileHeader)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	student := &types.StudentInfo{
+		GroupName:  r.FormValue("groupName"),
+		Name:       r.FormValue("name"),
+		Surname:    r.FormValue("surname"),
+		Patronymic: r.FormValue("patronymic"),
+	}
+
+	errServer := h.service.Upload(&file, fileHeader, student)
+	if errServer != nil {
+		http.Error(w, errServer.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	render.JSON(w, r, "Upload successfully done")
-}
-
-func (h *StorageHandler) Download(w http.ResponseWriter, r *http.Request) {
-	render.JSON(w, r, "download")
 }
